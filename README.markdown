@@ -6,4 +6,4 @@ changes, and used globally.
 
 ## Current Type Support
 
- * Duration - Ability to store time.Duration over JSON and database.
+ * Duration - Ability to store `time.Duration` over JSON and database.
