@@ -17,11 +17,13 @@ type durationForTestingMaps struct {
 var (
 	durationStruct = Duration{
 		Duration: time.Second,
+		Nil:      false,
 	}
 
 	durationStructAsMap = durationForTestingMaps{
 		Duration: Duration{
 			time.Second,
+			false,
 		},
 	}
 )
@@ -39,6 +41,7 @@ var (
 	testDurationJSONNoContentFound          = []byte(`{}`)
 	testDurationJSONInvalidDataType         = []byte(`{"d": true}`)
 	testDurationJSONLengthTooBig            = []byte(`{"d": true, "x": "1s"}`)
+	testDurationNil                         = []byte(`{"d": null}`)
 )
 
 func TestScan(t *testing.T) {

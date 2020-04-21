@@ -12,6 +12,7 @@ import (
 // Duration is wrapper for time.Duration with additional methods
 type Duration struct {
 	time.Duration
+	Nil bool
 }
 
 // Value that the database usage will see
@@ -23,6 +24,7 @@ func (d Duration) Value() (driver.Value, error) {
 func (d *Duration) Scan(v interface{}) error {
 	if v == nil {
 		d.Duration = 0
+		d.Nil = true
 		return nil
 	}
 
@@ -49,6 +51,9 @@ func (d *Duration) Scan(v interface{}) error {
 
 // MarshalJSON takes a duration and marshal it as a string
 func (d Duration) MarshalJSON() ([]byte, error) {
+	if d.Nil {
+		json.Marshal(nil)
+	}
 	return json.Marshal(d.String())
 }
 
@@ -107,6 +112,9 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 				return fmt.Errorf("Invalid kind of value: %s", kind2)
 			}
 		}
+	case reflect.Invalid:
+		d.Duration = 0
+		d.Nil = true
 	default:
 		return fmt.Errorf("Invalid duration type: %T, %+v", v, v)
 	}
@@ -114,5 +122,8 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 }
 
 func (d Duration) String() string {
+	if d.Nil {
+		return "nil"
+	}
 	return d.Duration.String()
 }
