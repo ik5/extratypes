@@ -23,7 +23,7 @@ func (d Duration) Value() (driver.Value, error) {
 // Scan the result from a query and assign it to the struct
 func (d *Duration) Scan(v interface{}) error {
 	if v == nil {
-		d.Duration = 0
+		d.Duration = -1
 		d.Nil = true
 		return nil
 	}
@@ -34,14 +34,35 @@ func (d *Duration) Scan(v interface{}) error {
 	switch kind {
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		d.Duration = time.Duration(val.Int())
+		if d.Duration == -1 {
+			d.Nil = true
+		}
 	case reflect.String:
 		var err error
-		d.Duration, err = time.ParseDuration(val.String())
+		str := val.String()
+		if str == "" {
+			d.Duration = -1
+			d.Nil = true
+			return nil
+		}
+
+		d.Duration, err = time.ParseDuration(str)
 		if err != nil {
 			return err
 		}
+
 	case reflect.Float32, reflect.Float64:
-		d.Duration = time.Duration(val.Float())
+		f := val.Float()
+		if f == 0 || f < 0 {
+			d.Duration = -1
+			d.Nil = true
+			return nil
+		}
+		d.Duration = time.Duration(f)
+	case reflect.Invalid:
+		d.Duration = -1
+		d.Nil = true
+		return nil
 	default:
 		return fmt.Errorf("Invalid type of %T", val)
 	}
@@ -117,7 +138,7 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 				}
 				return nil
 			case reflect.Invalid:
-				d.Duration = 0
+				d.Duration = -1
 				d.Nil = true
 				return nil
 
@@ -126,7 +147,7 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 			}
 		}
 	case reflect.Invalid:
-		d.Duration = 0
+		d.Duration = -1
 		d.Nil = true
 		return nil
 	default:
@@ -138,7 +159,7 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 // UnmarshalText unmar
 func (d *Duration) UnmarshalText(b []byte) error {
 	if len(b) == 0 {
-		d.Duration = 0
+		d.Duration = -1
 		d.Nil = true
 		return nil
 	}
@@ -147,7 +168,7 @@ func (d *Duration) UnmarshalText(b []byte) error {
 	d.Duration, err = time.ParseDuration(string(b))
 
 	if err != nil {
-		d.Duration = 0
+		d.Duration = -1
 		d.Nil = true
 		return err
 	}

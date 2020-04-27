@@ -90,7 +90,7 @@ func TestScanNil(t *testing.T) {
 	defer db.Close()
 
 	row := mock.NewRows([]string{"duration"}).
-		AddRow(0).
+		AddRow(-1).
 		AddRow("").
 		AddRow(nil)
 
@@ -100,8 +100,8 @@ func TestScanNil(t *testing.T) {
 	for rs.Next() {
 		var d Duration
 		rs.Scan(&d)
-		if d.Duration != 0 {
-			t.Errorf("Duration is not 1 second: %s", d)
+		if d.Duration != -1 && !d.Nil {
+			t.Errorf("Duration is not -1 second: %d (%s)", d.Duration, d)
 		}
 
 	}
@@ -387,8 +387,8 @@ func TestUnmarshalJSONBasicNil(t *testing.T) {
 		return
 	}
 
-	if result.Duration != 0 {
-		t.Errorf("Expected duration to be 0, found %d", result.Duration)
+	if result.Duration != -1 {
+		t.Errorf("Expected duration to be -1, found %d", result.Duration)
 	}
 
 	if !result.Nil {
@@ -405,8 +405,8 @@ func TestUnmarshalJSONMapNil(t *testing.T) {
 		return
 	}
 
-	if result.Duration != 0 {
-		t.Errorf("Expected duration to be 0, found %d", result.Duration)
+	if result.Duration != -1 {
+		t.Errorf("Expected duration to be -1, found %d", result.Duration)
 	}
 
 	if !result.Nil {
@@ -489,8 +489,8 @@ func TestUnmarshalTextError(t *testing.T) {
 		return
 	}
 
-	if d.Duration != 0 {
-		t.Errorf("Expected duration 0, got %d (%s)", d.Duration, d.Duration)
+	if d.Duration != -1 {
+		t.Errorf("Expected duration -1, got %d (%s)", d.Duration, d.Duration)
 	}
 
 	if !d.Nil {
@@ -510,7 +510,7 @@ func TestUnmarshalTextNil(t *testing.T) {
 		t.Errorf("Expected nil")
 	}
 
-	if d.Duration != 0 {
-		t.Errorf("Expected 0, got %d (%s)", d.Duration, d.Duration)
+	if d.Duration != -1 {
+		t.Errorf("Expected -1, got %d (%s)", d.Duration, d.Duration)
 	}
 }
