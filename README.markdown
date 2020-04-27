@@ -9,4 +9,4 @@ changes, and used globally.
  * Duration - Ability to store `time.Duration` over JSON and database.
 
 # TODO
-  - [ ] Add Tests for nil duration
+  - [x] Add Tests for nil duration
