@@ -41,7 +41,12 @@ var (
 	testDurationJSONNoContentFound          = []byte(`{}`)
 	testDurationJSONInvalidDataType         = []byte(`{"d": true}`)
 	testDurationJSONLengthTooBig            = []byte(`{"d": true, "x": "1s"}`)
-	testDurationNil                         = []byte(`{"d": null}`)
+	testDurationNil                         = []byte(`null`)
+	testDurationNilMap                      = []byte(`{"d": null}`)
+
+	testDurationTextBasic = []byte(`1s`)
+	testDurationTextErr   = []byte(`true`)
+	testDurationTextNil   = []byte("")
 )
 
 func TestScan(t *testing.T) {
@@ -353,5 +358,159 @@ func TestJSONUnMarshalLengthTooBig(t *testing.T) {
 	if !reflect.DeepEqual(d, Duration{}) {
 		t.Errorf("Expected empty duration, got %+v instead", d)
 		return
+	}
+}
+
+func TestMarshalJSONNil(t *testing.T) {
+	d := Duration{
+		Duration: 0,
+		Nil:      true,
+	}
+
+	result, err := d.MarshalJSON()
+	if err != nil {
+		t.Errorf("Error marshal nil json: %s", err)
+		return
+	}
+
+	cmp := bytes.Compare(result, testDurationNil)
+	if cmp != 0 {
+		t.Errorf("Invalid result: %d %s", cmp, result)
+	}
+}
+
+func TestUnmarshalJSONBasicNil(t *testing.T) {
+	result := Duration{}
+	err := result.UnmarshalJSON(testDurationNil)
+	if err != nil {
+		t.Errorf("Unable to unmarshal nil duration in JSON: %s", err)
+		return
+	}
+
+	if result.Duration != 0 {
+		t.Errorf("Expected duration to be 0, found %d", result.Duration)
+	}
+
+	if !result.Nil {
+		t.Errorf("Expected nil")
+	}
+}
+
+func TestUnmarshalJSONMapNil(t *testing.T) {
+	result := Duration{}
+	err := result.UnmarshalJSON(testDurationNilMap)
+
+	if err != nil {
+		t.Errorf("Unable to unmarshal nil duration in JSON: %s", err)
+		return
+	}
+
+	if result.Duration != 0 {
+		t.Errorf("Expected duration to be 0, found %d", result.Duration)
+	}
+
+	if !result.Nil {
+		t.Errorf("Expected nil")
+	}
+
+}
+
+func TestNilString(t *testing.T) {
+	d := Duration{
+		Duration: 0,
+		Nil:      true,
+	}
+
+	if d.String() != "nil" {
+		t.Errorf("Expected nil, found %s", d.String())
+	}
+}
+
+func TestMarshalText(t *testing.T) {
+	result, err := durationStruct.MarshalText()
+	if err != nil {
+		t.Errorf("Unable to marshal text: %s", err)
+		return
+	}
+
+	cmp := bytes.Compare(result, testDurationTextBasic)
+	if cmp != 0 {
+		t.Errorf("cmp: %d result: %s", cmp, result)
+	}
+}
+
+func TestMarshalTextNil(t *testing.T) {
+	d := Duration{
+		Duration: 0,
+		Nil:      true,
+	}
+
+	result, err := d.MarshalText()
+	if err != nil {
+		t.Errorf("Unable to marshal text: %s", err)
+		return
+	}
+
+	cmp := bytes.Compare(result, testDurationTextNil)
+	if cmp != 0 {
+		t.Errorf("cmp: %d result: %s", cmp, result)
+	}
+}
+
+func TestUnmarshalBasic(t *testing.T) {
+	d := Duration{}
+	err := d.UnmarshalText(testDurationTextBasic)
+	if err != nil {
+		t.Errorf("Unable to unmarshal text: %s", err)
+		return
+	}
+
+	if d.Duration != time.Second {
+		t.Errorf("Expected one second, got: %d (%s)", d.Duration, d.Duration)
+	}
+
+	if d.Nil {
+		t.Errorf("Unexpected nil")
+	}
+}
+
+func TestUnmarshalTextError(t *testing.T) {
+	d := Duration{}
+
+	err := d.UnmarshalText(testDurationTextErr)
+	if err == nil {
+		t.Error("Error must not be nil")
+	}
+
+	expectedErr := "time: invalid duration " + string(testDurationTextErr)
+
+	if err.Error() != expectedErr {
+		t.Errorf("Unexpected error: %s", err)
+		return
+	}
+
+	if d.Duration != 0 {
+		t.Errorf("Expected duration 0, got %d (%s)", d.Duration, d.Duration)
+	}
+
+	if !d.Nil {
+		t.Errorf("Expected nil")
+	}
+}
+
+func TestUnmarshalTextNil(t *testing.T) {
+	d := Duration{}
+	err := d.UnmarshalText(testDurationTextNil)
+	if err != nil {
+		t.Errorf("Error unmarshal empty duration: %s", err)
+		return
+	}
+
+	if !d.Nil {
+		t.Errorf("Expected nil")
+	}
+
+	if d.Duration != 0 {
+		t.Errorf("Expected 0, got %d (%s)", d.Duration, d.Duration)
 	}
 }

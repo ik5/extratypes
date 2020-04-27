@@ -52,9 +52,17 @@ func (d *Duration) Scan(v interface{}) error {
 // MarshalJSON takes a duration and marshal it as a string
 func (d Duration) MarshalJSON() ([]byte, error) {
 	if d.Nil {
-		json.Marshal(nil)
+		return json.Marshal(nil)
 	}
 	return json.Marshal(d.String())
+}
+
+// MarshalText takes duration and marshal it as a string
+func (d *Duration) MarshalText() ([]byte, error) {
+	if d.Nil {
+		return []byte(""), nil
+	}
+	return []byte(d.Duration.String()), nil
 }
 
 // UnmarshalJSON takes a slice of bytes and convert it to Duration
@@ -108,6 +116,11 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 					return err
 				}
 				return nil
+			case reflect.Invalid:
+				d.Duration = 0
+				d.Nil = true
+				return nil
+
 			default:
 				return fmt.Errorf("Invalid kind of value: %s", kind2)
 			}
@@ -115,10 +128,30 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 	case reflect.Invalid:
 		d.Duration = 0
 		d.Nil = true
+		return nil
 	default:
 		return fmt.Errorf("Invalid duration type: %T, %+v", v, v)
 	}
 	return errors.New("Unknown error")
+}
+
+// UnmarshalText unmar
+func (d *Duration) UnmarshalText(b []byte) error {
+	if len(b) == 0 {
+		d.Duration = 0
+		d.Nil = true
+		return nil
+	}
+
+	var err error
+	d.Duration, err = time.ParseDuration(string(b))
+
+	if err != nil {
+		d.Duration = 0
+		d.Nil = true
+		return err
+	}
+	return nil
 }
 
 func (d Duration) String() string {
