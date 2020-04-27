@@ -10,3 +10,4 @@ changes, and used globally.
 
 # TODO
   - [x] Add Tests for nil duration
+  - [ ] Add more test covers for nil duration
