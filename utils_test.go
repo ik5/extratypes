@@ -217,3 +217,141 @@ func TestAsStringPtr(t *testing.T) {
 		t.Errorf("dest expected to be '<nil>' but got '%s'", dest)
 	}
 }
+
+func TestAsInt8Int8(t *testing.T) {
+	src := int8(10)
+	dest := asInt8(src)
+
+	if dest != src {
+		t.Errorf("dest [%d] != src[%d]", dest, src)
+	}
+}
+
+func TestAsInt8Int16Big(t *testing.T) {
+	src := int16(256)
+	dest := asInt8(src)
+
+	if int16(dest) == src {
+		t.Errorf("dest [%d] == src[%d]", dest, src)
+	}
+
+	if dest != maxInt8 {
+		t.Errorf("dest [%d] != %d", dest, maxInt8)
+	}
+}
+
+func TestAsInt8Int16Small(t *testing.T) {
+	src := int16(-256)
+	dest := asInt8(src)
+
+	if int16(dest) == src {
+		t.Errorf("dest [%d] == src[%d]", dest, src)
+	}
+
+	if dest != minInt8 {
+		t.Errorf("dest [%d] != %d", dest, maxInt8)
+	}
+}
+
+func TestAsInt8Int16Equal(t *testing.T) {
+	src := int16(10)
+	dest := asInt8(src)
+
+	if int16(dest) != src {
+		t.Errorf("dest [%d] != src[%d]", dest, src)
+	}
+}
+
+func TestAsInt8Uint16Big(t *testing.T) {
+	src := uint16(256)
+	dest := asInt8(src)
+
+	if uint16(dest) == src {
+		t.Errorf("dest [%d] == src[%d]", dest, src)
+	}
+
+	if dest != maxInt8 {
+		t.Errorf("dest [%d] != %d", dest, maxInt8)
+	}
+}
+
+func TestAsInt8Uint16Equal(t *testing.T) {
+	src := uint16(10)
+	dest := asInt8(src)
+
+	if uint16(dest) != src {
+		t.Errorf("dest [%d] != src[%d]", dest, src)
+	}
+}
+
+func TestAsInt8StringEmpty(t *testing.T) {
+	src := ""
+	dest := asInt8(src)
+
+	if dest != 0 {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsInt8StringSignedNormal(t *testing.T) {
+	src := "-10"
+	dest := asInt8(src)
+
+	if dest != -10 {
+		t.Errorf("dest [%d] is not -10", dest)
+	}
+}
+
+func TestAsInt8StringSignedInvalid(t *testing.T) {
+	src := "-a10"
+	dest := asInt8(src)
+
+	if dest != 0 {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsInt8StringSignedBig(t *testing.T) {
+	src := "-1000"
+	dest := asInt8(src)
+
+	if dest != minInt8 {
+		t.Errorf("dest [%d] is not %d", dest, minInt8)
+	}
+}
+
+func TestAsInt8StringUnsignedNormal(t *testing.T) {
+	src := "10"
+	dest := asInt8(src)
+
+	if dest != 10 {
+		t.Errorf("dest [%d] is not 10", dest)
+	}
+}
+
+func TestAsInt8StringUnsignedBig(t *testing.T) {
+	src := "1000"
+	dest := asInt8(src)
+
+	if dest != maxInt8 {
+		t.Errorf("dest [%d] is not %d", dest, maxInt8)
+	}
+}
+
+func TestAsInt8StringUnsignedInvalid(t *testing.T) {
+	src := "a10"
+	dest := asInt8(src)
+
+	if dest != 0 {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsInt8Unknown(t *testing.T) {
+	var src struct{}
+	dest := asInt8(src)
+
+	if dest != 0 {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}

@@ -1,12 +1,30 @@
 package extratypes
 
 import (
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
-	"time"
+)
+
+// Values from math, do not use it just for that...
+const (
+	maxInt8                = 1<<7 - 1
+	minInt8                = -1 << 7
+	maxInt16               = 1<<15 - 1
+	minInt16               = -1 << 15
+	maxInt32               = 1<<31 - 1
+	minInt32               = -1 << 31
+	maxInt64               = 1<<63 - 1
+	minInt64               = -1 << 63
+	maxUint8               = 1<<8 - 1
+	maxUint16              = 1<<16 - 1
+	maxUint32              = 1<<32 - 1
+	maxUint64              = 1<<64 - 1
+	maxFloat32             = 3.40282346638528859811704183484516925440e+38   // 2**127 * (2**24 - 1) / 2**23
+	smallestNonzeroFloat32 = 1.401298464324817070923729583289916131280e-45  // 1 / 2**(127 - 1 + 23)
+	maxFloat64             = 1.797693134862315708145274237317043567981e+308 // 2**1023 * (2**53 - 1) / 2**52
+	smallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324 // 1 / 2**(1023 - 1 + 52)
 )
 
 var errNilPtr = errors.New("destination pointer is nil")
@@ -16,221 +34,53 @@ var errNilPtr = errors.New("destination pointer is nil")
 // dest should be a pointer type.
 // If src is nil, then the function return true, and dest remains as-is.
 func toType(src, dest interface{}) (bool, error) {
-	switch s := src.(type) {
-	case string:
-		switch d := dest.(type) {
-		case *string:
-			if d == nil {
-				return false, errNilPtr
-			}
+	return false, nil
+}
 
-			*d = s
-			return false, nil
-
-		case *[]byte:
-			if d == nil {
-				return false, errNilPtr
-			}
-
-			*d = []byte(s)
-			return false, nil
+func asInt8(src interface{}) int8 {
+	val := reflect.ValueOf(src)
+	v := val.Kind()
+	switch v {
+	case reflect.Int8:
+		return src.(int8)
+	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
+		i := val.Int()
+		if i > int64(maxInt8) {
+			return maxInt8
 		}
-
-	case []byte:
-		switch d := dest.(type) {
-		case *string:
-			if d == nil {
-				return false, errNilPtr
-			}
-
-			*d = string(s)
-			return false, nil
-
-		case *interface{}:
-			if d == nil {
-				return false, errNilPtr
-			}
-
-			*d = cloneBytes(s)
-			return false, nil
-
-		case *[]byte:
-			if d == nil {
-				return false, errNilPtr
-			}
-
-			*d = cloneBytes(s)
-
-			return false, nil
+		if i < int64(minInt8) {
+			return minInt8
 		}
-
-	case time.Time:
-		switch d := dest.(type) {
-		case *time.Time:
-			*d = s
-			return false, nil
-
-		case *string:
-			*d = s.Format(time.RFC3339Nano)
-			return false, nil
-
-		case *[]byte:
-			if d == nil {
-				return false, errNilPtr
-			}
-
-			*d = []byte(s.Format(time.RFC3339Nano))
-
-			return false, nil
+		return int8(i)
+	case reflect.Uint8, reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		i := val.Uint()
+		if i > maxInt8 {
+			return maxInt8
 		}
-	}
-
-	var sv reflect.Value
-
-	switch d := dest.(type) {
-	case *string:
-		sv = reflect.ValueOf(src)
-		switch sv.Kind() {
-		case reflect.Bool,
-			reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-			reflect.Float32, reflect.Float64:
-
-			*d = asString(src)
-			return false, nil
-		}
-
-	case *[]byte:
-		sv = reflect.ValueOf(src)
-
-		if b, ok := asBytes(nil, sv); ok {
-			*d = b
-			return false, nil
-		}
-
-	case *bool:
-		bv, err := driver.Bool.ConvertValue(src)
-		if err == nil {
-			*d = bv.(bool)
-		}
-
-		return bv == nil, err
-
-	case *interface{}:
-		*d = src
-		return false, nil
-	}
-
-	dpv := reflect.ValueOf(dest)
-
-	if dpv.Kind() != reflect.Ptr {
-		return false, errors.New("destination not a pointer")
-	}
-
-	if dpv.IsNil() {
-		return true, nil
-	}
-
-	if !sv.IsValid() {
-		sv = reflect.ValueOf(src)
-	}
-
-	dv := reflect.Indirect(dpv)
-
-	if sv.IsValid() && sv.Type().AssignableTo(dv.Type()) {
-		switch b := src.(type) {
-		case []byte:
-			dv.Set(reflect.ValueOf(cloneBytes(b)))
-		default:
-			dv.Set(sv)
-		}
-
-		return false, nil
-	}
-
-	if dv.Kind() == sv.Kind() && sv.Type().ConvertibleTo(dv.Type()) {
-		dv.Set(sv.Convert(dv.Type()))
-		return false, nil
-	}
-
-	// The following conversions use a string value as an intermediate representation
-	// to convert between various numeric types.
-	//
-	// This also allows scanning into user defined types such as "type Int int64".
-	// For symmetry, also check for string destination types.
-	switch dv.Kind() {
-	case reflect.Ptr:
-		if src == nil {
-			dv.Set(reflect.Zero(dv.Type()))
-			return true, nil
-		}
-
-		dv.Set(reflect.New(dv.Type().Elem()))
-		return toType(dv.Interface(), src)
-
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		if src == nil {
-			return true, nil
-		}
-
-		s := asString(src)
-		i64, err := strconv.ParseInt(s, 10, dv.Type().Bits())
-		if err != nil {
-			err = strconvErr(err)
-			return false, fmt.Errorf("converting driver.Value type %T (%q) to a %s: %v", src, s, dv.Kind(), err)
-		}
-
-		dv.SetInt(i64)
-		return false, nil
-
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		if src == nil {
-			return true, nil
-		}
-
-		s := asString(src)
-		u64, err := strconv.ParseUint(s, 10, dv.Type().Bits())
-		if err != nil {
-			err = strconvErr(err)
-			return false, fmt.Errorf("converting driver.Value type %T (%q) to a %s: %v", src, s, dv.Kind(), err)
-		}
-
-		dv.SetUint(u64)
-		return false, nil
-
-	case reflect.Float32, reflect.Float64:
-		if src == nil {
-			return true, nil
-		}
-
-		s := asString(src)
-		f64, err := strconv.ParseFloat(s, dv.Type().Bits())
-		if err != nil {
-			err = strconvErr(err)
-			return false, fmt.Errorf("converting driver.Value type %T (%q) to a %s: %v", src, s, dv.Kind(), err)
-		}
-
-		dv.SetFloat(f64)
-		return false, nil
-
+		return int8(i)
 	case reflect.String:
-		if src == nil {
-			return true, nil
+		s := val.String()
+		if s == "" {
+			return 0
 		}
 
-		switch v := src.(type) {
-		case string:
-			dv.SetString(v)
-			return false, nil
+		if s[0] == '-' { // signed
+			i, err := strconv.ParseInt(s, 10, 64)
+			if err != nil {
+				return 0
+			}
 
-		case []byte:
-			dv.SetString(string(v))
-			return false, nil
+			return asInt8(i)
 		}
 
+		i, err := strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			return 0
+		}
+		return asInt8(i)
 	}
 
-	return false, fmt.Errorf("unsupported Scan, storing driver.Value type %T into type %T", src, dest)
+	return 0
 }
 
 func asString(src interface{}) string {
