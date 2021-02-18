@@ -149,3 +149,71 @@ func TestAsBytesPtr(t *testing.T) {
 		t.Errorf("result[0] [%v] is equal to buf[0] [%v]", result, buf)
 	}
 }
+
+func TestAsStringString(t *testing.T) {
+	src := "hello"
+	dest := asString(src)
+
+	if dest != src {
+		t.Errorf("dest '%s' not equal to src '%s'", dest, src)
+	}
+}
+
+func TestAsStringByteSlice(t *testing.T) {
+	src := []byte{'h', 'e', 'l', 'l', 'o'}
+	dest := asString(src)
+
+	if dest != string(src) {
+		t.Errorf("dest '%s' not equal to src '%s'", dest, src)
+	}
+
+}
+
+func TestAsStringInt(t *testing.T) {
+	src := 10
+	dest := asString(src)
+	if dest != "10" {
+		t.Errorf("dest '%s' is not '%d'", dest, src)
+	}
+}
+
+func TestAsStringUInt(t *testing.T) {
+	src := uint(10)
+	dest := asString(src)
+	if dest != "10" {
+		t.Errorf("dest '%s' is not '%d'", dest, src)
+	}
+}
+
+func TestAsStringFloat32(t *testing.T) {
+	src := float32(10)
+	dest := asString(src)
+	if dest != "10" {
+		t.Errorf("dest '%s' is not '%f'", dest, src)
+	}
+}
+
+func TestAsStringFloat64(t *testing.T) {
+	src := float64(10)
+	dest := asString(src)
+	if dest != "10" {
+		t.Errorf("dest '%s' is not '%f'", dest, src)
+	}
+}
+
+func TestAsStringBool(t *testing.T) {
+	src := true
+	dest := asString(src)
+
+	if dest != "true" {
+		t.Errorf("Expected dest to be '%t', got: '%s'", src, dest)
+	}
+}
+
+func TestAsStringPtr(t *testing.T) {
+	var src interface{} = nil
+	dest := asString(src)
+	if dest != "<nil>" {
+		t.Errorf("dest expected to be '<nil>' but got '%s'", dest)
+	}
+}
