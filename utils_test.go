@@ -2,6 +2,7 @@ package extratypes
 
 import (
 	"errors"
+	"math"
 	"reflect"
 	"strconv"
 	"testing"
@@ -218,140 +219,293 @@ func TestAsStringPtr(t *testing.T) {
 	}
 }
 
-func TestAsInt8Int8(t *testing.T) {
+func TestAsIntInt8(t *testing.T) {
 	src := int8(10)
-	dest := asInt8(src)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if dest != src {
+	if dest.(int64) != int64(src) {
 		t.Errorf("dest [%d] != src[%d]", dest, src)
 	}
 }
 
-func TestAsInt8Int16Big(t *testing.T) {
-	src := int16(256)
-	dest := asInt8(src)
+func TestAsIntInt16Big(t *testing.T) {
+	src := int64(256)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if int16(dest) == src {
+	if dest.(int64) == src {
 		t.Errorf("dest [%d] == src[%d]", dest, src)
 	}
 
-	if dest != maxInt8 {
-		t.Errorf("dest [%d] != %d", dest, maxInt8)
+	if dest.(int64) != int64(math.MaxInt8) {
+		t.Errorf("dest [%d] != %d", dest, math.MaxInt8)
 	}
 }
 
-func TestAsInt8Int16Small(t *testing.T) {
-	src := int16(-256)
-	dest := asInt8(src)
+func TestAsIntInt16Small(t *testing.T) {
+	src := int64(-256)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if int16(dest) == src {
+	if dest.(int64) == src {
 		t.Errorf("dest [%d] == src[%d]", dest, src)
 	}
 
-	if dest != minInt8 {
-		t.Errorf("dest [%d] != %d", dest, maxInt8)
+	if dest != int64(math.MinInt8) {
+		t.Errorf("dest [%d] != %d", dest, math.MinInt8)
 	}
 }
 
-func TestAsInt8Int16Equal(t *testing.T) {
-	src := int16(10)
-	dest := asInt8(src)
+func TestAsIntInt16Equal(t *testing.T) {
+	src := int64(10)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if int16(dest) != src {
+	if dest.(int64) != src {
 		t.Errorf("dest [%d] != src[%d]", dest, src)
 	}
 }
 
-func TestAsInt8Uint16Big(t *testing.T) {
-	src := uint16(256)
-	dest := asInt8(src)
+func TestAsIntUint16Big(t *testing.T) {
+	src := uint64(256)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if uint16(dest) == src {
+	if dest.(int64) == int64(src) {
 		t.Errorf("dest [%d] == src[%d]", dest, src)
 	}
 
-	if dest != maxInt8 {
-		t.Errorf("dest [%d] != %d", dest, maxInt8)
+	if dest != int64(math.MaxInt8) {
+		t.Errorf("dest [%d] != %d", dest, math.MaxInt8)
 	}
 }
 
-func TestAsInt8Uint16Equal(t *testing.T) {
-	src := uint16(10)
-	dest := asInt8(src)
+func TestAsIntUint16Equal(t *testing.T) {
+	src := uint64(10)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if uint16(dest) != src {
+	if dest.(int64) != int64(src) {
 		t.Errorf("dest [%d] != src[%d]", dest, src)
 	}
 }
 
-func TestAsInt8StringEmpty(t *testing.T) {
+func TestAsIntStringEmpty(t *testing.T) {
 	src := ""
-	dest := asInt8(src)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if dest != 0 {
+	if dest.(int64) != 0 {
 		t.Errorf("dest [%d] is not 0", dest)
 	}
 }
 
-func TestAsInt8StringSignedNormal(t *testing.T) {
+func TestAsIntStringSignedNormal(t *testing.T) {
 	src := "-10"
-	dest := asInt8(src)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if dest != -10 {
+	if dest.(int64) != int64(-10) {
 		t.Errorf("dest [%d] is not -10", dest)
 	}
 }
 
-func TestAsInt8StringSignedInvalid(t *testing.T) {
+func TestAsIntStringSignedInvalid(t *testing.T) {
 	src := "-a10"
-	dest := asInt8(src)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if dest != 0 {
+	if dest.(int64) != int64(0) {
 		t.Errorf("dest [%d] is not 0", dest)
 	}
 }
 
-func TestAsInt8StringSignedBig(t *testing.T) {
+func TestAsIntStringSignedBig(t *testing.T) {
 	src := "-1000"
-	dest := asInt8(src)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if dest != minInt8 {
-		t.Errorf("dest [%d] is not %d", dest, minInt8)
+	if dest.(int64) != int64(math.MinInt8) {
+		t.Errorf("dest [%d] is not %d", dest, math.MinInt8)
 	}
 }
 
-func TestAsInt8StringUnsignedNormal(t *testing.T) {
+func TestAsIntStringUnsignedNormal(t *testing.T) {
 	src := "10"
-	dest := asInt8(src)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if dest != 10 {
+	if dest.(int64) != int64(10) {
 		t.Errorf("dest [%d] is not 10", dest)
 	}
 }
 
-func TestAsInt8StringUnsignedBig(t *testing.T) {
+func TestAsIntStringUnsignedBig(t *testing.T) {
 	src := "1000"
-	dest := asInt8(src)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if dest != maxInt8 {
-		t.Errorf("dest [%d] is not %d", dest, maxInt8)
+	if dest.(int64) != int64(math.MaxInt8) {
+		t.Errorf("dest [%d] is not %d", dest, math.MaxInt8)
 	}
 }
 
-func TestAsInt8StringUnsignedInvalid(t *testing.T) {
+func TestAsIntStringUnsignedInvalid(t *testing.T) {
 	src := "a10"
-	dest := asInt8(src)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if dest != 0 {
+	if dest.(int64) != int64(0) {
 		t.Errorf("dest [%d] is not 0", dest)
 	}
 }
 
-func TestAsInt8Unknown(t *testing.T) {
+func TestAsIntUnknown(t *testing.T) {
 	var src struct{}
-	dest := asInt8(src)
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
 
-	if dest != 0 {
+	if dest.(int64) != 0 {
 		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsIntFloatNormal(t *testing.T) {
+	src := 22.511
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
+
+	if dest.(int64) != 22 {
+		t.Errorf("dest [%d] != 22", dest)
+	}
+}
+
+func TestAsIntFloatBig(t *testing.T) {
+	src := 1000.5
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
+
+	if dest.(int64) != int64(math.MaxInt8) {
+		t.Errorf("dest [%d] != %d", dest, math.MaxInt8)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+func TestAsUintInt8(t *testing.T) {
+	src := int8(10)
+	dest := asUint(src, 0, math.MaxUint8)
+
+	if dest.(uint64) != uint64(src) {
+		t.Errorf("dest [%d] != src[%d]", dest, src)
+	}
+}
+
+func TestAsUIntInt16Big(t *testing.T) {
+	src := int64(256)
+	dest := asUint(src, 0, math.MaxUint8)
+
+	if dest.(uint64) == uint64(src) {
+		t.Errorf("dest [%d] == src[%d]", dest, src)
+	}
+
+	if dest.(uint64) != uint64(math.MaxUint8) {
+		t.Errorf("dest [%d] != %d", dest, math.MaxInt8)
+	}
+}
+
+func TestAsUintUint16Equal(t *testing.T) {
+	src := int64(10)
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(src) {
+		t.Errorf("dest [%d] != src[%d]", dest, src)
+	}
+}
+
+func TestAsUintUint16Big(t *testing.T) {
+	src := uint64(256)
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) == uint64(src) {
+		t.Errorf("dest [%d] == src[%d]", dest, src)
+	}
+
+	if dest.(uint64) != uint64(math.MaxInt8) {
+		t.Errorf("dest [%d] != %d", dest, math.MaxInt8)
+	}
+}
+
+func TestAsUintStringEmpty(t *testing.T) {
+	src := ""
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != 0 {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsUintStringSignedNormal(t *testing.T) {
+	src := "-10"
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(0) {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsUintStringSignedInvalid(t *testing.T) {
+	src := "-a10"
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(0) {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsUintStringSignedBig(t *testing.T) {
+	src := "-1000"
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(0) {
+		t.Errorf("dest [%d] is not %d", dest, math.MinInt8)
+	}
+}
+
+func TestAsUintStringUnsignedNormal(t *testing.T) {
+	src := "10"
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(10) {
+		t.Errorf("dest [%d] is not 10", dest)
+	}
+}
+
+func TestAsUintStringUnsignedBig(t *testing.T) {
+	src := "1000"
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(math.MaxInt8) {
+		t.Errorf("dest [%d] is not %d", dest, math.MaxInt8)
+	}
+}
+
+func TestAsUintStringUnsignedInvalid(t *testing.T) {
+	src := "a10"
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(0) {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsUintUnknown(t *testing.T) {
+	var src struct{}
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != 0 {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsUintFloatNormal(t *testing.T) {
+	src := 22.511
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != 22 {
+		t.Errorf("dest [%d] != 22", dest)
+	}
+}
+
+func TestAsUintFloatBig(t *testing.T) {
+	src := 1000.5
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(math.MaxInt8) {
+		t.Errorf("dest [%d] != %d", dest, math.MaxInt8)
 	}
 }

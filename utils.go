@@ -1,33 +1,11 @@
 package extratypes
 
 import (
-	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 )
-
-// Values from math, do not use it just for that...
-const (
-	maxInt8                = 1<<7 - 1
-	minInt8                = -1 << 7
-	maxInt16               = 1<<15 - 1
-	minInt16               = -1 << 15
-	maxInt32               = 1<<31 - 1
-	minInt32               = -1 << 31
-	maxInt64               = 1<<63 - 1
-	minInt64               = -1 << 63
-	maxUint8               = 1<<8 - 1
-	maxUint16              = 1<<16 - 1
-	maxUint32              = 1<<32 - 1
-	maxUint64              = 1<<64 - 1
-	maxFloat32             = 3.40282346638528859811704183484516925440e+38   // 2**127 * (2**24 - 1) / 2**23
-	smallestNonzeroFloat32 = 1.401298464324817070923729583289916131280e-45  // 1 / 2**(127 - 1 + 23)
-	maxFloat64             = 1.797693134862315708145274237317043567981e+308 // 2**1023 * (2**53 - 1) / 2**52
-	smallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324 // 1 / 2**(1023 - 1 + 52)
-)
-
-var errNilPtr = errors.New("destination pointer is nil")
 
 // toType copies to dest the value in src, converting it if possible.
 // An error is returned if the copy would result in loss of information.
@@ -37,50 +15,95 @@ func toType(src, dest interface{}) (bool, error) {
 	return false, nil
 }
 
-func asInt8(src interface{}) int8 {
+func asInt(src interface{}, minRange, maxRange int64) interface{} {
 	val := reflect.ValueOf(src)
 	v := val.Kind()
 	switch v {
-	case reflect.Int8:
-		return src.(int8)
-	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
+	case reflect.Int8, reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
 		i := val.Int()
-		if i > int64(maxInt8) {
-			return maxInt8
+		if i > maxRange {
+			return maxRange
 		}
-		if i < int64(minInt8) {
-			return minInt8
+		if i < minRange {
+			return minRange
 		}
-		return int8(i)
+		return i
 	case reflect.Uint8, reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		i := val.Uint()
-		if i > maxInt8 {
-			return maxInt8
+		if i > uint64(maxRange) {
+			return maxRange
 		}
-		return int8(i)
+		return int64(i)
+	case reflect.Float32, reflect.Float64:
+		f := math.Floor(val.Float())
+		return asInt(int64(f), minRange, maxRange)
 	case reflect.String:
 		s := val.String()
 		if s == "" {
-			return 0
+			return int64(0)
 		}
 
 		if s[0] == '-' { // signed
 			i, err := strconv.ParseInt(s, 10, 64)
 			if err != nil {
-				return 0
+				return int64(0)
 			}
 
-			return asInt8(i)
+			return asInt(i, minRange, maxRange)
 		}
 
 		i, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
-			return 0
+			return int64(0)
 		}
-		return asInt8(i)
+		return asInt(i, minRange, maxRange)
 	}
 
-	return 0
+	return int64(0)
+
+}
+
+func asUint(src interface{}, minRange, maxRange uint64) interface{} {
+	val := reflect.ValueOf(src)
+	v := val.Kind()
+	switch v {
+	case reflect.Int8, reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
+		i := val.Int()
+		if uint64(i) > maxRange {
+			return maxRange
+		}
+		if uint64(i) < minRange {
+			return minRange
+		}
+		return uint64(i)
+	case reflect.Uint8, reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		i := val.Uint()
+		if i > maxRange {
+			return maxRange
+		}
+		return i
+	case reflect.Float32, reflect.Float64:
+		f := math.Floor(val.Float())
+		return asUint(uint64(f), minRange, maxRange)
+	case reflect.String:
+		s := val.String()
+		if s == "" {
+			return uint64(0)
+		}
+
+		if s[0] == '-' { // signed
+			return minRange
+		}
+
+		i, err := strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			return uint64(0)
+		}
+		return asUint(i, minRange, maxRange)
+	}
+
+	return uint64(0)
+
 }
 
 func asString(src interface{}) string {
