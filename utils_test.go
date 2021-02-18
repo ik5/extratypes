@@ -51,3 +51,101 @@ func TestStrConvErrorNumError(t *testing.T) {
 		t.Errorf("err: [%s] not equal to destErr: [%s]", err, destErr)
 	}
 }
+
+func TestAsBytesInt(t *testing.T) {
+	val := reflect.ValueOf(10)
+	buf := []byte{10}
+	result, ok := asBytes(buf, val)
+
+	if !ok {
+		t.Error("Invalid convert")
+	}
+
+	if result[0] != buf[0] {
+		t.Errorf("result[0] [%v] is not equal to buf[0] [%v]", result[0], buf[0])
+	}
+}
+
+func TestAsBytesUInt(t *testing.T) {
+	val := reflect.ValueOf(uint(10))
+	buf := []byte{10}
+	result, ok := asBytes(buf, val)
+
+	if !ok {
+		t.Error("Invalid convert")
+	}
+
+	if result[0] != buf[0] {
+		t.Errorf("result[0] [%v] is not equal to buf[0] [%v]", result[0], buf[0])
+	}
+}
+
+func TestAsBytesFloat32(t *testing.T) {
+	val := reflect.ValueOf(float32(10))
+	buf := []byte{10}
+	result, ok := asBytes(buf, val)
+
+	if !ok {
+		t.Error("Invalid convert")
+	}
+
+	if result[0] != buf[0] {
+		t.Errorf("result[0] [%v] is not equal to buf[0] [%v]", result[0], buf[0])
+	}
+}
+
+func TestAsBytesFloat64(t *testing.T) {
+	val := reflect.ValueOf(float64(10))
+	buf := []byte{10}
+	result, ok := asBytes(buf, val)
+
+	if !ok {
+		t.Error("Invalid convert")
+	}
+
+	if result[0] != buf[0] {
+		t.Errorf("result[0] [%v] is not equal to buf[0] [%v]", result[0], buf[0])
+	}
+}
+
+func TestAsBytesBool(t *testing.T) {
+	val := reflect.ValueOf(true)
+	buf := []byte{1}
+	result, ok := asBytes(buf, val)
+
+	if !ok {
+		t.Error("Invalid convert")
+	}
+
+	if result[0] != buf[0] {
+		t.Errorf("result[0] [%v] is not equal to buf[0] [%v]", result[0], buf[0])
+	}
+}
+
+func TestAsBytesString(t *testing.T) {
+	val := reflect.ValueOf("hello")
+	buf := []byte{'h', 'e', 'l', 'l', 'o'}
+	result, ok := asBytes(buf, val)
+
+	if !ok {
+		t.Error("Invalid convert")
+	}
+
+	if !reflect.DeepEqual(result, append(buf, buf...)) {
+		t.Errorf("result [%v] is not equal to buf [%v]", result, buf)
+	}
+}
+
+func TestAsBytesPtr(t *testing.T) {
+	val := reflect.ValueOf(nil)
+	buf := []byte{'h'}
+	result, ok := asBytes(buf, val)
+
+	if ok {
+		t.Error("Invalid convert")
+	}
+
+	if reflect.DeepEqual(result, buf) {
+		t.Errorf("result[0] [%v] is equal to buf[0] [%v]", result, buf)
+	}
+}
