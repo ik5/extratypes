@@ -482,7 +482,7 @@ func TestUnmarshalTextError(t *testing.T) {
 		t.Error("Error must not be nil")
 	}
 
-	expectedErr := "time: invalid duration " + string(testDurationTextErr)
+	expectedErr := `time: invalid duration "` + string(testDurationTextErr) + `"`
 
 	if err.Error() != expectedErr {
 		t.Errorf("Unexpected error: %s", err)
