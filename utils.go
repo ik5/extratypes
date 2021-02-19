@@ -1,6 +1,7 @@
 package extratypes
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math"
 	"reflect"
@@ -23,6 +24,23 @@ var (
 // dest should be a pointer type.
 // If src is nil, then the function return true, and dest remains as-is.
 func toType(src, dest interface{}) (bool, error) {
+	if src == nil {
+		return true, nil
+	}
+
+	switch dest.(type) {
+	case *string:
+		d := dest.(*string)
+		*d = asString(src)
+		return false, nil
+	}
+
+	/*
+		rv := reflect.ValueOf(src)
+		switch rv.Kind() {
+
+		}
+	*/
 	return false, nil
 }
 
@@ -181,6 +199,43 @@ func asString(src interface{}) string {
 	}
 
 	return fmt.Sprintf("%v", src)
+}
+
+func asByteSlice(src interface{}) []byte {
+	if src == nil {
+		return nil
+	}
+
+	switch v := src.(type) {
+	case string:
+		return []byte(v)
+
+	case []byte:
+		return v
+	case bool:
+		var buf []byte
+		return strconv.AppendBool(buf, v)
+	case float32:
+		var buf []byte
+		return strconv.AppendFloat(buf, float64(v), 'g', -1, 32)
+	case float64:
+		var buf []byte
+		return strconv.AppendFloat(buf, v, 'g', -1, 64)
+	}
+
+	v := reflect.ValueOf(src)
+	switch v.Kind() {
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		buf := make([]byte, binary.MaxVarintLen64)
+		l := binary.PutVarint(buf, v.Int())
+		return buf[:l]
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+		buf := make([]byte, binary.MaxVarintLen64)
+		l := binary.PutUvarint(buf, v.Uint())
+		return buf[:l]
+	}
+
+	return nil
 }
 
 func asBytes(buf []byte, rv reflect.Value) (b []byte, ok bool) {

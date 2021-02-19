@@ -1,7 +1,10 @@
 package extratypes
 
 import (
+	"bytes"
+	"encoding/binary"
 	"errors"
+	"fmt"
 	"math"
 	"reflect"
 	"strconv"
@@ -677,4 +680,92 @@ func TestAsBoolUnknown(t *testing.T) {
 	if dest {
 		t.Errorf("dest [%t] expected to be false", dest)
 	}
+}
+
+func TestAsByteSliceNil(t *testing.T) {
+	dest := asByteSlice(nil)
+	if dest != nil {
+		t.Errorf("dest [%v] must be nil.", dest)
+	}
+}
+
+func TestAsByteSliceString(t *testing.T) {
+	src := "hello"
+	dest := asByteSlice(src)
+
+	if dest == nil {
+		t.Error("dest cannot be nil")
+	}
+
+	if bytes.Compare(dest, []byte(src)) != 0 {
+		t.Errorf("dest [%s] needed to be %s", dest, src)
+	}
+}
+
+func TestAsByteSliceByteSlice(t *testing.T) {
+	src := []byte{'h', 'e', 'l', 'l', 'o'}
+	dest := asByteSlice(src)
+
+	if bytes.Compare(dest, src) != 0 {
+		t.Errorf("dest [%v] not equal to %v", dest, src)
+	}
+}
+
+func TestAsByteSliceBool(t *testing.T) {
+	src := true
+	dest := asByteSlice(src)
+
+	if bytes.Compare([]byte{'t', 'r', 'u', 'e'}, dest) != 0 {
+		t.Errorf("dest [%v] should %t", dest, src)
+	}
+}
+
+func TestAsByteSliceFloat32(t *testing.T) {
+	t.Run("float 32", func(te *testing.T) {
+		for i := float32(0.1); i < 10.1; i++ {
+			dest := asByteSlice(i)
+
+			if bytes.Compare([]byte(fmt.Sprintf("%g", i)), dest) != 0 {
+				te.Errorf("dest [%s] is not %g", dest, i)
+			}
+		}
+	})
+}
+
+func TestAsByteSliceFloat64(t *testing.T) {
+	t.Run("float 64", func(te *testing.T) {
+		for i := float64(0.1); i < 10.1; i++ {
+			dest := asByteSlice(i)
+
+			if bytes.Compare([]byte(fmt.Sprintf("%g", i)), dest) != 0 {
+				te.Errorf("dest [%s] is not %g", dest, i)
+			}
+		}
+	})
+}
+
+func TestAsByteInt(t *testing.T) {
+	t.Run("test int", func(te *testing.T) {
+		for i := 0; i < 10; i++ {
+			dest := asByteSlice(i)
+
+			result, _ := binary.Varint(dest)
+			if result != int64(i) {
+				t.Errorf("dest [%x] is not %x | result %x", dest, i, result)
+			}
+		}
+	})
+}
+
+func TestAsByteUint(t *testing.T) {
+	t.Run("test uint", func(te *testing.T) {
+		for i := uint64(0); i < 10; i++ {
+			dest := asByteSlice(i)
+
+			result, _ := binary.Uvarint(dest)
+			if result != i {
+				t.Errorf("dest [%x] is not %x | result %x", dest, i, result)
+			}
+		}
+	})
 }
