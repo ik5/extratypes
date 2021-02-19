@@ -778,3 +778,278 @@ func TestAsByteSliceUnknown(t *testing.T) {
 		t.Errorf("dest [%v] is not nil", dest)
 	}
 }
+
+func TestToTypeNil(t *testing.T) {
+	var dest int
+	result, err := toType(nil, &dest)
+	if err != nil {
+		t.Errorf("Unexpected Error: %s", err)
+	}
+
+	if !result {
+		t.Error("Expected result to be true")
+	}
+
+}
+
+func TestToTypeString(t *testing.T) {
+	var dest string
+	src := 10
+	result, err := toType(src, &dest)
+
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	if result {
+		t.Errorf("result should be false")
+	}
+
+	if dest != "10" {
+		t.Errorf("dest [%s] should be %d", dest, src)
+	}
+}
+
+func TestToTypeByteSlice(t *testing.T) {
+	var dest []byte
+	src := false
+
+	result, err := toType(src, &dest)
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	if result {
+		t.Errorf("result should be false")
+	}
+
+	if bytes.Compare([]byte{'f', 'a', 'l', 's', 'e'}, dest) != 0 {
+		t.Errorf("dest [%s] should be %t", dest, src)
+	}
+}
+
+func TestToTypeBool(t *testing.T) {
+	var dest bool
+	src := "yes"
+
+	result, err := toType(src, &dest)
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+	}
+
+	if result {
+		t.Errorf("result should be false")
+	}
+
+	if !dest {
+		t.Errorf("dest [%t] should be true", dest)
+	}
+}
+
+func TestToTypeInt(t *testing.T) {
+	t.Run("test int", func(te *testing.T) {
+		for i := -9; i < 10; i++ {
+			var dest int
+			result, err := toType(i, &dest)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			if result {
+				t.Errorf("result should be false")
+			}
+
+			if int(i) != dest {
+				te.Errorf("dest [%d] is not %d", dest, i)
+			}
+		}
+	})
+
+	t.Run("test int8", func(te *testing.T) {
+		for i := -9; i < 10; i++ {
+			var dest int8
+			result, err := toType(i, &dest)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			if result {
+				t.Errorf("result should be false")
+			}
+
+			if int8(i) != dest {
+				te.Errorf("dest [%d] is not %d", dest, i)
+			}
+		}
+	})
+
+	t.Run("test int16", func(te *testing.T) {
+		for i := -9; i < 10; i++ {
+			var dest int16
+			result, err := toType(i, &dest)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			if result {
+				t.Errorf("result should be false")
+			}
+
+			if int16(i) != dest {
+				te.Errorf("dest [%d] is not %d", dest, i)
+			}
+		}
+	})
+
+	t.Run("test int32", func(te *testing.T) {
+		for i := -9; i < 10; i++ {
+			var dest int32
+			result, err := toType(i, &dest)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			if result {
+				t.Errorf("result should be false")
+			}
+
+			if int32(i) != dest {
+				te.Errorf("dest [%d] is not %d", dest, i)
+			}
+		}
+	})
+
+	t.Run("test int64", func(te *testing.T) {
+		for i := -9; i < 10; i++ {
+			var dest int64
+			result, err := toType(i, &dest)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			if result {
+				t.Errorf("result should be false")
+			}
+
+			if int64(i) != dest {
+				te.Errorf("dest [%d] is not %d", dest, i)
+			}
+		}
+	})
+
+}
+
+func TestToTypeUint(t *testing.T) {
+	t.Run("test uint", func(te *testing.T) {
+		for i := 0; i < 10; i++ {
+			var dest uint
+			result, err := toType(i, &dest)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			if result {
+				t.Errorf("result should be false")
+			}
+
+			if uint(i) != dest {
+				te.Errorf("dest [%d] is not %d", dest, i)
+			}
+		}
+	})
+
+	t.Run("test uint8", func(te *testing.T) {
+		for i := 0; i < 10; i++ {
+			var dest uint8
+			result, err := toType(i, &dest)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			if result {
+				t.Errorf("result should be false")
+			}
+
+			if uint8(i) != dest {
+				te.Errorf("dest [%d] is not %d", dest, i)
+			}
+		}
+	})
+
+	t.Run("test uint16", func(te *testing.T) {
+		for i := 0; i < 10; i++ {
+			var dest uint16
+			result, err := toType(i, &dest)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			if result {
+				t.Errorf("result should be false")
+			}
+
+			if uint16(i) != dest {
+				te.Errorf("dest [%d] is not %d", dest, i)
+			}
+		}
+	})
+
+	t.Run("test uint32", func(te *testing.T) {
+		for i := 0; i < 10; i++ {
+			var dest uint32
+			result, err := toType(i, &dest)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			if result {
+				t.Errorf("result should be false")
+			}
+
+			if uint32(i) != dest {
+				te.Errorf("dest [%d] is not %d", dest, i)
+			}
+		}
+	})
+
+	t.Run("test uint64", func(te *testing.T) {
+		for i := 0; i < 10; i++ {
+			var dest uint64
+			result, err := toType(i, &dest)
+
+			if err != nil {
+				t.Errorf("Unexpected error: %s", err)
+			}
+
+			if result {
+				t.Errorf("result should be false")
+			}
+
+			if uint64(i) != dest {
+				te.Errorf("dest [%d] is not %d", dest, i)
+			}
+		}
+	})
+}
+
+func TestToTypeUnsupported(t *testing.T) {
+	var dest struct{}
+	src := 10
+	_, err := toType(src, &dest)
+	if err == nil {
+		t.Error("expected err, but nil provided")
+	}
+
+	if !errors.Is(err, ErrDestUnsupported) {
+		t.Errorf("Expected err to be %s, but %s provided", ErrDestUnsupported, err)
+	}
+}

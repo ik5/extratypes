@@ -2,11 +2,19 @@ package extratypes
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
 	"strconv"
 	"strings"
+)
+
+const (
+	maxUint = ^uint(0)
+	minUint = 0
+	maxInt  = int(maxUint >> 1)
+	minInt  = -maxInt - 1
 )
 
 var (
@@ -17,6 +25,8 @@ var (
 		"y": true, "n": false,
 		"1": true, "0": false, "-1": false,
 	}
+
+	ErrDestUnsupported = errors.New("Unsupported dest type")
 )
 
 // toType copies to dest the value in src, converting it if possible.
@@ -33,19 +43,77 @@ func toType(src, dest interface{}) (bool, error) {
 		d := dest.(*string)
 		*d = asString(src)
 		return false, nil
-	case []byte:
-		d := dest.(*string)
+	case *[]byte:
+		d := dest.(*[]byte)
 		*d = asByteSlice(src)
+		return false, nil
+	case *bool:
+		d := dest.(*bool)
+		*d = asBool(src)
 		return false, nil
 	}
 
-	/*
-		rv := reflect.ValueOf(src)
-		switch rv.Kind() {
+	v := reflect.ValueOf(dest)
+	switch v.Kind() {
+	case reflect.Ptr:
+		ptr := v.Elem()
+		switch ptr.Kind() {
+		case reflect.Int:
+			d := dest.(*int)
+			i := asInt(src, int64(minInt), int64(maxInt))
+			*d = int(i.(int64))
+			return false, nil
+		case reflect.Int8:
+			d := dest.(*int8)
+			i := asInt(src, math.MinInt8, math.MaxInt8)
+			*d = int8(i.(int64))
+			return false, nil
+		case reflect.Int16:
+			d := dest.(*int16)
+			i := asInt(src, math.MinInt16, math.MaxInt16)
+			*d = int16(i.(int64))
+			return false, nil
+		case reflect.Int32:
+			d := dest.(*int32)
+			i := asInt(src, math.MinInt32, math.MaxInt32)
+			*d = int32(i.(int64))
+			return false, nil
+		case reflect.Int64:
+			d := dest.(*int64)
+			i := asInt(src, math.MinInt64, math.MaxInt64)
+			*d = i.(int64)
+			return false, nil
 
+		case reflect.Uint:
+			d := dest.(*uint)
+			i := asUint(src, 0, uint64(maxUint))
+			*d = uint(i.(uint64))
+			return false, nil
+		case reflect.Uint8:
+			d := dest.(*uint8)
+			i := asUint(src, 0, math.MaxUint8)
+			*d = uint8(i.(uint64))
+			return false, nil
+		case reflect.Uint16:
+			d := dest.(*uint16)
+			i := asUint(src, 0, math.MaxUint16)
+			*d = uint16(i.(uint64))
+			return false, nil
+		case reflect.Uint32:
+			d := dest.(*uint32)
+			i := asUint(src, 0, math.MaxUint32)
+			*d = uint32(i.(uint64))
+			return false, nil
+		case reflect.Uint64:
+			d := dest.(*uint64)
+			i := asUint(src, 0, math.MaxUint64)
+			*d = i.(uint64)
+			return false, nil
 		}
-	*/
-	return false, nil
+
+	}
+
+	return false, ErrDestUnsupported
 }
 
 func asBool(src interface{}) bool {
