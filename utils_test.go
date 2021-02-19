@@ -375,7 +375,6 @@ func TestAsIntFloatBig(t *testing.T) {
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////////
 func TestAsUintInt8(t *testing.T) {
 	src := int8(10)
 	dest := asUint(src, 0, math.MaxUint8)
@@ -517,5 +516,165 @@ func TestAsUintRange(t *testing.T) {
 
 	if dest.(uint64) != min {
 		t.Errorf("dest [%d] != %d", dest, min)
+	}
+}
+
+func TestAsBoolNil(t *testing.T) {
+	dest := asBool(nil)
+
+	if dest {
+		t.Errorf("dest [%t] expected to be false", dest)
+	}
+}
+
+func TestAsBoolInt(t *testing.T) {
+	result := t.Run("true int", func(te *testing.T) {
+		for src := 1; src < 10; src++ {
+			dest := asBool(src)
+			if !dest {
+				te.Errorf("dest [%t] for %d expected to be true", dest, src)
+			}
+		}
+	})
+
+	if !result {
+		t.Errorf("'true int' failed")
+	}
+
+	result = t.Run("false int", func(te *testing.T) {
+		for src := 0; src > -10; src-- {
+			dest := asBool(src)
+			if dest {
+				te.Errorf("dest [%t] for %d expected to be false", dest, src)
+			}
+
+		}
+	})
+	if !result {
+		t.Errorf("'false int' failed")
+	}
+}
+
+func TestAsBoolUInt(t *testing.T) {
+	result := t.Run("true int", func(te *testing.T) {
+		for src := uint(1); src < 10; src++ {
+			dest := asBool(src)
+			if !dest {
+				te.Errorf("dest [%t] for %d expected to be true", dest, src)
+			}
+		}
+	})
+
+	if !result {
+		t.Errorf("'true int' failed")
+	}
+
+	dest := asBool(uint(0))
+	if dest {
+		t.Errorf("dest [%t] for 0 is not false", dest)
+	}
+}
+
+func TestAsBoolByteSlice(t *testing.T) {
+	trueList := [][]byte{
+		[]byte("true"),
+		[]byte("yes"),
+		[]byte("t"),
+		[]byte("y"),
+		[]byte("1"),
+	}
+
+	falseList := [][]byte{
+		[]byte("false"),
+		[]byte("no"),
+		[]byte("f"),
+		[]byte("n"),
+		[]byte("0"),
+		[]byte("-1"),
+		[]byte("-2"),
+	}
+
+	t.Run("true list", func(te *testing.T) {
+		for _, value := range trueList {
+			dest := asBool(value)
+			if !dest {
+				te.Errorf("dest [%t] for %s is false", dest, value)
+			}
+		}
+	})
+
+	t.Run("false list", func(te *testing.T) {
+		for _, value := range falseList {
+			dest := asBool(value)
+			if dest {
+				te.Errorf("dest [%t] for %s is true", dest, value)
+			}
+		}
+	})
+}
+
+func TestAsBoolString(t *testing.T) {
+	trueList := []string{
+		"true", "yes", "t", "y", "1",
+	}
+
+	falseList := []string{
+		"false", "no", "f", "n", "0", "-1", "-2",
+	}
+
+	t.Run("true list", func(te *testing.T) {
+		for _, value := range trueList {
+			dest := asBool(value)
+			if !dest {
+				te.Errorf("dest [%t] for %s is false", dest, value)
+			}
+		}
+	})
+
+	t.Run("false list", func(te *testing.T) {
+		for _, value := range falseList {
+			dest := asBool(value)
+			if dest {
+				te.Errorf("dest [%t] for %s is true", dest, value)
+			}
+		}
+	})
+}
+
+func TestAsBoolFloat(t *testing.T) {
+	result := t.Run("true float", func(te *testing.T) {
+		for src := float64(1.0); src < 10; src++ {
+			dest := asBool(src)
+			if !dest {
+				te.Errorf("dest [%t] for %2f expected to be true", dest, src)
+			}
+		}
+	})
+
+	if !result {
+		t.Errorf("'true int' failed")
+	}
+
+	result = t.Run("false float", func(te *testing.T) {
+		for src := float64(0.0); src > -10; src-- {
+			dest := asBool(src)
+			if dest {
+				te.Errorf("dest [%t] for %2f expected to be false", dest, src)
+			}
+
+		}
+	})
+	if !result {
+		t.Errorf("'false int' failed")
+	}
+
+}
+
+func TestAsBoolUnknown(t *testing.T) {
+	var src struct{}
+	dest := asBool(src)
+
+	if dest {
+		t.Errorf("dest [%t] expected to be false", dest)
 	}
 }

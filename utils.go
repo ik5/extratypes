@@ -5,6 +5,17 @@ import (
 	"math"
 	"reflect"
 	"strconv"
+	"strings"
+)
+
+var (
+	boolMap = map[string]bool{
+		"true": true, "false": false,
+		"yes": true, "no": false,
+		"t": true, "f": false,
+		"y": true, "n": false,
+		"1": true, "0": false, "-1": false,
+	}
 )
 
 // toType copies to dest the value in src, converting it if possible.
@@ -13,6 +24,46 @@ import (
 // If src is nil, then the function return true, and dest remains as-is.
 func toType(src, dest interface{}) (bool, error) {
 	return false, nil
+}
+
+func asBool(src interface{}) bool {
+	if src == nil {
+		return false
+	}
+
+	switch src.(type) {
+	case string:
+		s := strings.ToLower(src.(string))
+		status, ok := boolMap[s]
+		if !ok {
+			return false
+		}
+		return status
+	case []byte:
+		s := strings.ToLower(string(src.([]byte)))
+		status, ok := boolMap[s]
+		if !ok {
+			return false
+		}
+		return status
+
+	}
+
+	val := reflect.ValueOf(src)
+	v := val.Kind()
+	switch v {
+	case reflect.Int8, reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
+		i := val.Int()
+		return i > 0
+	case reflect.Uint8, reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		i := val.Uint()
+		return i > 0
+	case reflect.Float32, reflect.Float64:
+		f := math.Floor(val.Float())
+		return int64(f) > 0
+	}
+
+	return false
 }
 
 func asInt(src interface{}, minRange, maxRange int64) interface{} {
