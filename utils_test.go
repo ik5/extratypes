@@ -509,3 +509,13 @@ func TestAsUintFloatBig(t *testing.T) {
 		t.Errorf("dest [%d] != %d", dest, math.MaxInt8)
 	}
 }
+
+func TestAsUintRange(t *testing.T) {
+	min := uint64(5)
+	src := 1
+	dest := asUint(src, min, math.MaxInt8)
+
+	if dest.(uint64) != min {
+		t.Errorf("dest [%d] != %d", dest, min)
+	}
+}
