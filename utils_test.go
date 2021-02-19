@@ -769,3 +769,12 @@ func TestAsByteUint(t *testing.T) {
 		}
 	})
 }
+
+func TestAsByteSliceUnknown(t *testing.T) {
+	var src struct{}
+	dest := asByteSlice(src)
+
+	if dest != nil {
+		t.Errorf("dest [%v] is not nil", dest)
+	}
+}

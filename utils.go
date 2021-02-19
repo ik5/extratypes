@@ -33,6 +33,10 @@ func toType(src, dest interface{}) (bool, error) {
 		d := dest.(*string)
 		*d = asString(src)
 		return false, nil
+	case []byte:
+		d := dest.(*string)
+		*d = asByteSlice(src)
+		return false, nil
 	}
 
 	/*
