@@ -48,7 +48,7 @@ func (i Int) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON takes a slice of bytes and convert it to Int
 func (i *Int) UnmarshalJSON(b []byte) error {
 	var v interface{}
-	err := json.Unmarshal(b, &i.Val)
+	err := json.Unmarshal(b, &v)
 	if err != nil {
 		return err
 	}
