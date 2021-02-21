@@ -1,6 +1,7 @@
 package extratypes
 
 import (
+	"bytes"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -68,11 +69,21 @@ func (i Int) MarshalText() ([]byte, error) {
 		return []byte(""), nil
 	}
 
-	return asByteSlice(i.Val), nil
+	return asByteSlice(i.String()), nil
 }
 
 // UnmarshalText takes a slice of bytes and convert it to Int
 func (i *Int) UnmarshalText(b []byte) error {
+	if b == nil {
+		i.Nil = true
+		return nil
+	}
+
+	if bytes.Compare(b, []byte("")) == 0 {
+		i.Nil = true
+		return nil
+	}
+
 	result, err := toType(b, &i.Val)
 	if err != nil {
 		return err
