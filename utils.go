@@ -200,6 +200,12 @@ func asInt(src interface{}, minRange, maxRange int64) interface{} {
 		return asInt(i, minRange, maxRange)
 	}
 
+	switch src.(type) {
+	case []byte:
+		s := string(src.([]byte))
+		return asInt(s, minRange, maxRange)
+	}
+
 	return int64(0)
 
 }
@@ -243,8 +249,13 @@ func asUint(src interface{}, minRange, maxRange uint64) interface{} {
 		return asUint(i, minRange, maxRange)
 	}
 
-	return uint64(0)
+	switch src.(type) {
+	case []byte:
+		s := string(src.([]byte))
+		return asUint(s, minRange, maxRange)
+	}
 
+	return uint64(0)
 }
 
 func asString(src interface{}) string {

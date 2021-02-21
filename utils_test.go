@@ -351,6 +351,70 @@ func TestAsIntStringUnsignedInvalid(t *testing.T) {
 	}
 }
 
+func TestAsIntAsByteSliceNormal(t *testing.T) {
+	src := []byte("10")
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
+
+	if dest.(int64) != int64(10) {
+		t.Errorf("dest [%d] is not 10", dest)
+	}
+
+}
+
+func TestAsIntByteSliceEmpty(t *testing.T) {
+	src := []byte("")
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
+
+	if dest.(int64) != 0 {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsIntByteSliceSignedNormal(t *testing.T) {
+	src := []byte("-10")
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
+
+	if dest.(int64) != int64(-10) {
+		t.Errorf("dest [%d] is not -10", dest)
+	}
+}
+
+func TestAsIntByteSliceSignedInvalid(t *testing.T) {
+	src := []byte("-a10")
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
+
+	if dest.(int64) != int64(0) {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsIntByteSliceSignedBig(t *testing.T) {
+	src := []byte("-1000")
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
+
+	if dest.(int64) != int64(math.MinInt8) {
+		t.Errorf("dest [%d] is not %d", dest, math.MinInt8)
+	}
+}
+
+func TestAsIntByteSliceUnsignedBig(t *testing.T) {
+	src := []byte("1000")
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
+
+	if dest.(int64) != int64(math.MaxInt8) {
+		t.Errorf("dest [%d] is not %d", dest, math.MaxInt8)
+	}
+}
+
+func TestAsIntByteSliceUnsignedInvalid(t *testing.T) {
+	src := []byte("a10")
+	dest := asInt(src, math.MinInt8, math.MaxInt8)
+
+	if dest.(int64) != int64(0) {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
 func TestAsIntUnknown(t *testing.T) {
 	var src struct{}
 	dest := asInt(src, math.MinInt8, math.MaxInt8)
@@ -478,6 +542,69 @@ func TestAsUintStringUnsignedBig(t *testing.T) {
 
 func TestAsUintStringUnsignedInvalid(t *testing.T) {
 	src := "a10"
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(0) {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsUintByteSliceEmpty(t *testing.T) {
+	src := []byte("")
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != 0 {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsUintByteSliceSignedNormal(t *testing.T) {
+	src := []byte("-10")
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(0) {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsUintByteSliceSignedInvalid(t *testing.T) {
+	src := []byte("-a10")
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(0) {
+		t.Errorf("dest [%d] is not 0", dest)
+	}
+}
+
+func TestAsUintByteSliceSignedBig(t *testing.T) {
+	src := []byte("-1000")
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(0) {
+		t.Errorf("dest [%d] is not %d", dest, math.MinInt8)
+	}
+}
+
+func TestAsUintByteSliceUnsignedNormal(t *testing.T) {
+	src := []byte("10")
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(10) {
+		t.Errorf("dest [%d] is not 10", dest)
+	}
+}
+
+func TestAsUintByteSliceUnsignedBig(t *testing.T) {
+	src := []byte("1000")
+	dest := asUint(src, 0, math.MaxInt8)
+
+	if dest.(uint64) != uint64(math.MaxInt8) {
+		t.Errorf("dest [%d] is not %d", dest, math.MaxInt8)
+	}
+}
+
+func TestAsUintByteSliceUnsignedInvalid(t *testing.T) {
+	src := []byte("a10")
 	dest := asUint(src, 0, math.MaxInt8)
 
 	if dest.(uint64) != uint64(0) {
