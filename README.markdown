@@ -8,6 +8,7 @@ changes, and used globally.
 
  * Duration - Ability to store `time.Duration` over JSON and database.
  * Numeric values - Ability to store and load `int` and `uint` family even when they are string for example.
+ * Bool - Ability to take boolean value as int, string and boolean and convert to `bool` type, with `nil` support.
 
 
 # TODO
