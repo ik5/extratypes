@@ -120,8 +120,9 @@ func asBool(src interface{}) bool {
 	if src == nil {
 		return false
 	}
-
 	switch src.(type) {
+	case bool:
+		return src.(bool)
 	case string:
 		s := strings.ToLower(src.(string))
 		status, ok := boolMap[s]
@@ -136,7 +137,6 @@ func asBool(src interface{}) bool {
 			return false
 		}
 		return status
-
 	}
 
 	val := reflect.ValueOf(src)
