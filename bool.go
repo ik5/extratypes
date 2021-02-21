@@ -1,9 +1,11 @@
 package extratypes
 
 import (
+	"bytes"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 	"strconv"
 )
 
@@ -68,5 +70,34 @@ func (b *Bool) UnmarshalJSON(buf []byte) error {
 	}
 
 	b.Val = asBool(v)
+	return nil
+}
+
+// MarshalText implement Text Marshaller interface
+func (b Bool) MarshalText() ([]byte, error) {
+	if b.Nil {
+		return []byte(""), nil
+	}
+
+	return asByteSlice(b.String()), nil
+}
+
+// UnmarshalText implement the text un-Marshaller interface
+func (b *Bool) UnmarshalText(buf []byte) error {
+	if buf == nil || bytes.Compare(buf, []byte("")) == 0 ||
+		bytes.Compare(buf, []byte("null")) == 0 ||
+		bytes.Compare(buf, []byte("nil")) == 0 {
+
+		b.Nil = true
+		return nil
+	}
+
+	result, err := toType(buf, &b.Val)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("buf: %s | result: %t | b.Val: %t\n", buf, result, b.Val)
+
+	b.Nil = result
 	return nil
 }

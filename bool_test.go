@@ -30,6 +30,9 @@ var (
 	testValidBoolFalseJSON = []byte("false")
 	testValidBoolNilJSON   = []byte("null")
 	testInvalidBoolJSON    = []byte("10")
+	testValidBoolTrueText  = []byte("true")
+	testValidBoolFalseText = []byte("false")
+	testValidBoolNilText   = []byte("")
 )
 
 func TestBoolString(t *testing.T) {
@@ -239,4 +242,101 @@ func TestBoolJSONUnmarshal(t *testing.T) {
 		}
 
 	})
+}
+
+func TestBoolTextMarshal(t *testing.T) {
+	t.Run("marshal true", func(te *testing.T) {
+		b, err := validBoolTrue.MarshalText()
+		if err != nil {
+			te.Errorf("Unexpected err: %s", err)
+		}
+
+		cmp := bytes.Compare(b, testValidBoolTrueText)
+		if cmp != 0 {
+			t.Errorf("b %s is not %s", b, testIntValidText)
+		}
+	})
+
+	t.Run("test false", func(te *testing.T) {
+		b, err := validBoolFalse.MarshalText()
+		if err != nil {
+			te.Errorf("Unexpected err: %s", err)
+		}
+
+		cmp := bytes.Compare(b, testValidBoolFalseText)
+		if cmp != 0 {
+			t.Errorf("b %s is not %s", b, testValidBoolFalseText)
+		}
+	})
+
+	t.Run("test nil marshal", func(te *testing.T) {
+		b, err := validBoolNil.MarshalText()
+		if err != nil {
+			te.Errorf("Unexpected err: %s", err)
+		}
+
+		cmp := bytes.Compare(b, testValidBoolNilText)
+		if cmp != 0 {
+			t.Errorf("b %s is not %s", b, testValidBoolNilText)
+		}
+
+	})
+
+}
+
+func TestBoolTextUnmarshal(t *testing.T) {
+	t.Run("unmarshal true", func(te *testing.T) {
+		var result Bool
+		err := result.UnmarshalJSON(testValidBoolTrueText)
+
+		if err != nil {
+			te.Errorf("Unexpected error: %s", err)
+		}
+
+		cmp := reflect.DeepEqual(result, validBoolTrue)
+		if !cmp {
+			te.Errorf("result %v not equal to %v", result, validBoolTrue)
+		}
+	})
+
+	t.Run("unmarshal false", func(te *testing.T) {
+		var result Bool
+		err := result.UnmarshalText(testValidBoolFalseText)
+
+		if err != nil {
+			te.Errorf("Unexpected error: %s", err)
+		}
+
+		cmp := reflect.DeepEqual(result, validBoolFalse)
+		if !cmp {
+			te.Errorf("result %v not equal to %v", result, validBoolFalse)
+		}
+	})
+
+	t.Run("unmarshal nil", func(te *testing.T) {
+		var result Bool
+		err := result.UnmarshalText(testValidBoolNilJSON)
+
+		if err != nil {
+			te.Errorf("Unexpected error: %s", err)
+		}
+
+		cmp := reflect.DeepEqual(result, validBoolNil)
+		if !cmp {
+			te.Errorf("result %v not equal to %v", result, validBoolNil)
+		}
+
+		err = result.UnmarshalText(nil)
+
+		if err != nil {
+			te.Errorf("Unexpected error: %s", err)
+		}
+
+		cmp = reflect.DeepEqual(result, validBoolNil)
+		if !cmp {
+			te.Errorf("result %v not equal to %v", result, validBoolNil)
+		}
+
+	})
+
 }
