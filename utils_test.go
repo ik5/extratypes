@@ -649,6 +649,17 @@ func TestAsUintRange(t *testing.T) {
 	}
 }
 
+func TestAsUintMaxRange(t *testing.T) {
+	max := uint64(5)
+	src := 10
+	dest := asUint(src, 0, max)
+
+	if dest.(uint64) != max {
+		t.Errorf("dest [%d] != %d", dest, max)
+	}
+
+}
+
 func TestAsBoolNil(t *testing.T) {
 	dest := asBool(nil)
 
