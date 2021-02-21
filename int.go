@@ -24,7 +24,7 @@ func (i Int) String() string {
 
 // Value interface for db
 func (i Int) Value() (driver.Value, error) {
-	return i.Val, nil
+	return int64(i.Val), nil
 }
 
 // Scan implement the Scan function from db interface

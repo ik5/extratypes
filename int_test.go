@@ -116,36 +116,6 @@ func TestIntScan(t *testing.T) {
 	})
 }
 
-func TestIntScanInvalidValue(t *testing.T) {
-
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Errorf("expected no error, but got: %s", err)
-		return
-	}
-	defer db.Close()
-
-	row := mock.NewRows([]string{"i"}).
-		AddRow(true).
-		AddRow(false)
-
-	mock.ExpectQuery("SELECT").WillReturnRows(row)
-	rs, _ := db.Query("SELECT")
-	defer rs.Close()
-	for rs.Next() {
-		var i Int
-		err = rs.Scan(&i)
-		if err == nil {
-			t.Error("There was no error on Scan")
-		}
-
-	}
-
-	if rs.Err() != nil {
-		t.Errorf("got rows error: %s", rs.Err())
-	}
-}
-
 func TestIntValue(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
