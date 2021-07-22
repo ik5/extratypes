@@ -3,6 +3,7 @@ package extratypes
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -75,6 +76,12 @@ func TestSlicedStringJSONMarshal(t *testing.T) {
 			expected: nil,
 			hasError: true,
 			err:      errors.New("unsupported type 'float64' in slice"),
+		},
+		toCheck{
+			s:        "'a'",
+			expected: nil,
+			hasError: true,
+			err:      errors.New("invalid character '\\'' looking for beginning of value"),
 		},
 	}
 
@@ -204,8 +211,54 @@ func TestSlicedStringScan(t *testing.T) {
 		},
 	}
 
+	invalidChecks := []toCheck{
+		toCheck{
+			s:        1,
+			expected: nil,
+			hasError: true,
+			err:      fmt.Errorf("unsupported type '%s'", "int"),
+		},
+		toCheck{
+			s:        []interface{}{1},
+			expected: nil,
+			hasError: true,
+			err:      fmt.Errorf("unsupported type '%s' in slice", "int"),
+		},
+	}
+
 	t.Run("valid scan", func(t2 *testing.T) {
 		for _, check := range validChecks {
+			var rec SlicedString
+			err := rec.Scan(check.s)
+			if check.hasError && err == nil {
+				t2.Errorf("Expected error '%s', but non exists", check.err)
+				continue
+			}
+
+			if check.hasError && check.err == nil {
+				t2.Errorf("Have error '%s', but non expected?!", err)
+				continue
+			}
+
+			if !check.hasError && err != nil {
+				t2.Errorf("Not expected err but '%s' exists", err)
+				continue
+			}
+
+			if check.hasError && err != nil && check.err != nil && err.Error() != check.err.Error() {
+				t2.Errorf("Expected err (%T) '%s' but (%T) '%s' exists", check.err, check.err, err, err)
+				continue
+			}
+
+			if !reflect.DeepEqual(check.expected, rec) {
+				t2.Errorf("Expected rec '%#v', but got '%#v'", check.expected, rec)
+				continue
+			}
+		}
+	})
+
+	t.Run("invalid checks", func(t2 *testing.T) {
+		for _, check := range invalidChecks {
 			var rec SlicedString
 			err := rec.Scan(check.s)
 			if check.hasError && err == nil {
