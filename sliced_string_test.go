@@ -190,6 +190,18 @@ func TestSlicedStringScan(t *testing.T) {
 			hasError: false,
 			err:      nil,
 		},
+		toCheck{
+			s:        []string{"a", "1"},
+			expected: SlicedString{"a", "1"},
+			hasError: false,
+			err:      nil,
+		},
+		toCheck{
+			s:        []interface{}{`["a", "1"]`},
+			expected: SlicedString{`["a", "1"]`},
+			hasError: false,
+			err:      nil,
+		},
 	}
 
 	t.Run("valid scan", func(t2 *testing.T) {
